@@ -12,6 +12,15 @@
     hard:   { rows: 16, cols: 30, candies: 99 },
   };
 
+  // Responsive board sizing — keeps the whole board + UI inside whatever
+  // container we're rendered into (phone screen, resized window, or a
+  // fixed-size itch.io embed iframe) instead of overflowing and getting
+  // cropped. Values must match the .board { gap / padding } in style.css.
+  const BOARD_GAP = 3;
+  const BOARD_PADDING = 6;
+  const MAX_CELL = 32;
+  const MIN_CELL = 16;
+
   const boardEl = document.getElementById("board");
   const candyCountEl = document.getElementById("candyCount");
   const timerEl = document.getElementById("timer");
@@ -107,7 +116,7 @@
 
   function renderBoard() {
     boardEl.innerHTML = "";
-    boardEl.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const cellEl = document.createElement("div");
@@ -123,6 +132,47 @@
         boardEl.appendChild(cellEl);
       }
     }
+    fitBoardToViewport();
+  }
+
+  // Computes the largest cell size (between MIN_CELL and MAX_CELL) that lets
+  // the whole board fit inside the current viewport — this is what actually
+  // is available to the page, whether that's a phone screen, a resized
+  // browser window, or a fixed-size itch.io embed iframe. Re-run on resize
+  // so the game never gets cropped, regardless of container size.
+  function fitBoardToViewport() {
+    if (!rows || !cols) return;
+    if (!boardEl.children.length) return;
+
+    // Vertical chrome (title bar, HUD, hint text, all paddings) is genuinely
+    // stacked above/below the board, so measuring the whole document and
+    // subtracting the board's own height gives an accurate, stable number.
+    const chromeHeight = document.documentElement.scrollHeight - boardEl.offsetHeight;
+
+    // Horizontal space is NOT simply "document width minus board width" —
+    // sibling rows (topbar/hud/hint) sit in the same column as the board,
+    // they don't add to its width requirement. The only real fixed
+    // horizontal chrome is body/.app padding, so compute that directly
+    // instead of measuring the DOM (which would double-count and make the
+    // board shrink way more than necessary, e.g. for the wide "hard" board).
+    const appEl = document.querySelector(".app");
+    const bodyStyle = getComputedStyle(document.body);
+    const appStyle = appEl ? getComputedStyle(appEl) : null;
+    const chromeWidth =
+      parseFloat(bodyStyle.paddingLeft) + parseFloat(bodyStyle.paddingRight) +
+      (appStyle ? parseFloat(appStyle.paddingLeft) + parseFloat(appStyle.paddingRight) : 0);
+
+    const safetyMargin = 12;
+    const availableHeight = window.innerHeight - chromeHeight - safetyMargin;
+    const availableWidth = window.innerWidth - chromeWidth - safetyMargin;
+
+    const cellByHeight = Math.floor((availableHeight - BOARD_PADDING * 2 - (rows - 1) * BOARD_GAP) / rows);
+    const cellByWidth = Math.floor((availableWidth - BOARD_PADDING * 2 - (cols - 1) * BOARD_GAP) / cols);
+
+    let cell = Math.min(MAX_CELL, cellByHeight, cellByWidth);
+    cell = Math.max(MIN_CELL, cell);
+
+    document.documentElement.style.setProperty("--cell", cell + "px");
   }
 
   // --- Mobile long-press => flag ---
@@ -350,6 +400,16 @@
   newGameBtn.addEventListener("click", newGame);
   difficultySelect.addEventListener("change", newGame);
   overlayBtn.addEventListener("click", newGame);
+
+  // Re-fit the board whenever the container size changes (window resize,
+  // phone rotation, or the itch.io embed iframe being resized) — this is
+  // what actually fixes the "half cropped in the itch.io embed" issue.
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitBoardToViewport, 100);
+  });
+  window.addEventListener("orientationchange", fitBoardToViewport);
 
   newGame();
 

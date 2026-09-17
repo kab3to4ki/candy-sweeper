@@ -1,5 +1,5 @@
 // Minimal offline-first service worker for Candy Sweeper PWA
-const CACHE_NAME = "candy-sweeper-v1";
+const CACHE_NAME = "candy-sweeper-v4"; // bump this on every deploy so returning players get fresh assets
 const CORE_ASSETS = [
   "./",
   "./index.html",

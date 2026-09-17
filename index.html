@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candy Sweeper 🍬</title>
+<meta name="description" content="Классический Сапёр, только вместо мин — конфеты 🍬">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a05eff">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Candy Sweeper">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>🍭 Candy Sweeper</h1>
+      <div class="controls">
+        <label for="difficulty">Уровень:</label>
+        <select id="difficulty">
+          <option value="easy">Лёгкий 9×9 / 10</option>
+          <option value="medium" selected>Средний 16×16 / 40</option>
+          <option value="hard">Сложный 16×30 / 99</option>
+        </select>
+        <button id="newGameBtn">Новая игра</button>
+      </div>
+    </header>
+
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-icon">🍬</span>
+        <span id="candyCount">0</span>
+      </div>
+      <button id="faceBtn" class="face-btn" title="Новая игра">🙂</button>
+      <div class="hud-item">
+        <span class="hud-icon">⏱️</span>
+        <span id="timer">000</span>
+      </div>
+    </div>
+
+    <div id="board" class="board"></div>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <div id="overlayEmoji" class="overlay-emoji">🎉</div>
+        <div id="overlayText" class="overlay-text">Победа!</div>
+        <button id="overlayBtn">Играть снова</button>
+      </div>
+    </div>
+
+    <p class="hint">ЛКМ — открыть клетку · ПКМ — поставить флаг 🚩</p>
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>
